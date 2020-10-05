@@ -126,6 +126,7 @@ namespace JobService.Service
             services.AddMassTransit(x =>
             {
 
+
                 x.AddRabbitMqMessageScheduler();
                 x.AddConsumer<ConvertVideoJobConsumer>();
                 x.AddConsumer<ConvertVideoJobConsumer>(typeof(ConvertVideoJobConsumerDefinition));
@@ -155,10 +156,14 @@ namespace JobService.Service
 
                 x.SetKebabCaseEndpointNameFormatter();
 
+
                 x.UsingRabbitMq((context, cfg) =>
                 {
+                    cfg.UseRabbitMqMessageScheduler();
 
-                    var options = new ServiceInstanceOptions().EnableInstanceEndpoint();
+                    var options = new ServiceInstanceOptions()
+                        .EnableInstanceEndpoint()
+                        .SetEndpointNameFormatter(KebabCaseEndpointNameFormatter.Instance);
 
                     cfg.ServiceInstance(options, instance =>
                     {
@@ -177,10 +182,6 @@ namespace JobService.Service
                             configurator.Username(userName);
                             configurator.Password(password);
                         });
-
-                        //cfg.ConfigureEndpoints(busFactory, SnakeCaseEndpointNameFormatter.Instance);
-                        //cfg.UseJsonSerializer();
-                        //cfg.UseHealthCheck(busFactory);
 
                         instance.ConfigureJobServiceEndpoints(js =>
                         {
